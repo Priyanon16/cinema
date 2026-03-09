@@ -26,53 +26,13 @@ $hum=$data['humidity']??0;
 
 <head>
 
-<title>Smart Cinema Control</title>
+<title>Smart Cinema Dashboard</title>
+
+<link rel="stylesheet" href="style.css">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<style>
-
-body{
-background:radial-gradient(circle,#2b0000,#000);
-color:white;
-font-family:Segoe UI;
-}
-
-.grid{
-
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:20px;
-padding:20px;
-
-}
-
-.card{
-
-background:#111;
-padding:20px;
-border-radius:15px;
-
-}
-
-button{
-
-background:#e00000;
-border:none;
-color:white;
-padding:12px;
-margin:6px;
-border-radius:8px;
-font-weight:bold;
-cursor:pointer;
-
-}
-
-button:hover{
-background:#ff4444;
-}
-
-</style>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
 </head>
 
@@ -80,13 +40,14 @@ background:#ff4444;
 
 <h1>🎬 SMART CINEMA CONTROL</h1>
 
+
 <div class="grid">
 
 <div class="card">
 
 <h2>Gas</h2>
 
-<h1><?php echo $gas ?></h1>
+<div class="value"><?php echo $gas ?></div>
 
 </div>
 
@@ -94,7 +55,7 @@ background:#ff4444;
 
 <h2>Temperature</h2>
 
-<h1><?php echo $temp ?></h1>
+<div class="value"><?php echo $temp ?></div>
 
 </div>
 
@@ -102,7 +63,7 @@ background:#ff4444;
 
 <h2>Humidity</h2>
 
-<h1><?php echo $hum ?></h1>
+<div class="value"><?php echo $hum ?></div>
 
 </div>
 
@@ -118,15 +79,33 @@ background:#ff4444;
 
 <div class="card">
 
-<h2>💡 Light Control</h2>
+<h2>Light Status</h2>
+
+Stair Light UC :
+<span id="stair1">OFF</span>
+
+<br><br>
+
+Stair Light IR :
+<span id="stair2">OFF</span>
+
+</div>
+
+
+<div class="card">
+
+<h2>Light Control</h2>
 
 <button onclick="send('cinema/stair1','ON')">Stair UC ON</button>
+
 <button onclick="send('cinema/stair1','OFF')">Stair UC OFF</button>
 
 <button onclick="send('cinema/stair2','ON')">Stair IR ON</button>
+
 <button onclick="send('cinema/stair2','OFF')">Stair IR OFF</button>
 
 <button onclick="send('cinema/walllight','ON')">Wall ON</button>
+
 <button onclick="send('cinema/walllight','OFF')">Wall OFF</button>
 
 </div>
@@ -134,22 +113,29 @@ background:#ff4444;
 
 <div class="card">
 
-<h2>🎬 Cinema Control</h2>
+<h2>Movie Control</h2>
 
 <button onclick="send('cinema/command','Input.Left')">LEFT</button>
+
 <button onclick="send('cinema/command','Input.Right')">RIGHT</button>
 
 <button onclick="send('cinema/command','Input.Up')">UP</button>
+
 <button onclick="send('cinema/command','Input.Down')">DOWN</button>
 
 <button onclick="send('cinema/command','playpause')">PLAY / PAUSE</button>
 
 <button onclick="send('cinema/command','Input.Select')">SELECT</button>
+
 <button onclick="send('cinema/command','Input.Back')">BACK</button>
+
 <button onclick="send('cinema/command','Input.Home')">HOME</button>
 
 </div>
 
+
+
+<script src="mqtt.js"></script>
 
 <script>
 
@@ -159,7 +145,7 @@ const hum=<?php echo $hum ?>;
 
 new Chart(document.getElementById("chart"),{
 
-type:'line',
+type:'bar',
 
 data:{
 labels:['Gas','Temp','Humidity'],
@@ -170,24 +156,6 @@ data:[gas,temp,hum]
 }
 
 });
-
-function send(topic,value){
-
-fetch("mqtt.php",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/x-www-form-urlencoded"
-},
-
-body:"topic="+topic+"&value="+value
-
-});
-
-}
-
-setTimeout(()=>location.reload(),5000);
 
 </script>
 
