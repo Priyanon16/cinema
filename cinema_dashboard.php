@@ -94,19 +94,23 @@ Stair Light IR :
 
 <div class="card">
 
-<h2>Light Control</h2>
+<h2>Light Status</h2>
 
-<button onclick="send('cinema/stair1','ON')">Stair UC ON</button>
+<div class="status">
 
-<button onclick="send('cinema/stair1','OFF')">Stair UC OFF</button>
+<div>
+Stair Light UC :
+<span id="stair1" class="off">OFF</span>
+</div>
 
-<button onclick="send('cinema/stair2','ON')">Stair IR ON</button>
+<br>
 
-<button onclick="send('cinema/stair2','OFF')">Stair IR OFF</button>
+<div>
+Stair Light IR :
+<span id="stair2" class="off">OFF</span>
+</div>
 
-<button onclick="send('cinema/walllight','ON')">Wall ON</button>
-
-<button onclick="send('cinema/walllight','OFF')">Wall OFF</button>
+</div>
 
 </div>
 
