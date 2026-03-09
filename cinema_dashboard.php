@@ -166,9 +166,9 @@ client.on("connect", function(){
 
 console.log("MQTT Connected");
 
-client.subscribe("cinema/stair1/state");
-client.subscribe("cinema/stair2/state");
-client.subscribe("cinema/walllight/state");
+client.subscribe("cinema/stair1");
+client.subscribe("cinema/stair2");
+client.subscribe("cinema/walllight");
 
 client.subscribe("cinema/gas");
 client.subscribe("temperature");
@@ -186,18 +186,18 @@ console.log(topic,value);
 
 /* Stair light */
 
-if(topic=="cinema/stair1/state"){
+if(topic=="cinema/stair1"){
 document.getElementById("stair1").innerHTML=value;
 }
 
-if(topic=="cinema/stair2/state"){
+if(topic=="cinema/stair2"){
 document.getElementById("stair2").innerHTML=value;
 }
 
 
 /* Wall light state */
 
-if(topic=="cinema/walllight/state"){
+if(topic=="cinema/walllight"){
 
 let sw=document.getElementById("wallSwitch");
 sw.checked = value=="ON";
