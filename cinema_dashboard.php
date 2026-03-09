@@ -272,7 +272,7 @@ document.getElementById("wallSwitch").addEventListener("change",function(){
 
 let value=this.checked?"ON":"OFF";
 
-client.publish("cinema/walllight/state",value);
+client.publish("cinema/walllight",value);
 
 });
 function send(topic,value){
