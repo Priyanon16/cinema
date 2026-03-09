@@ -116,7 +116,7 @@ Stair Light IR :
 
 <button onclick="send('cinema/command','Input.Down')">DOWN</button>
 
-<button onclick="send('cinema/command','playpause')">PLAY / PAUSE</button>
+<button onclick="playpause()">PLAY / PAUSE</button>
 
 <button onclick="send('cinema/command','Input.Select')">SELECT</button>
 
@@ -299,6 +299,19 @@ createGauge("tempGauge", temp, 100, "#ff4444")
 
 createGauge("humGauge", hum, 100, "#e6ff00")
 
+
+function playpause(){
+
+let msg = {
+method:"Input.ExecuteAction",
+params:{
+action:"playpause"
+}
+};
+
+client.publish("cinema/command",JSON.stringify(msg));
+
+}
 </script>
 
 </body>
