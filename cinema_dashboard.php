@@ -1,7 +1,4 @@
 <?php
-/* ===============================
-   DATABASE CONNECTION
-================================ */
 
 $host = "localhost";
 $user = "admin_man";
@@ -13,7 +10,6 @@ $conn = new mysqli($host,$user,$pass,$db);
 if ($conn->connect_error) {
     die("Connection Error: " . $conn->connect_error);
 }
-
 
 
 
