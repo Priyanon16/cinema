@@ -22,20 +22,6 @@ padding:20px;
 
 }
 
-.card{
-
-background:#111;
-
-padding:20px;
-
-border-radius:15px;
-
-box-shadow:0 0 25px rgba(255,0,0,0.4);
-
-text-align:center;
-
-}
-
 canvas{
 
 width:100% !important;
