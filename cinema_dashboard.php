@@ -1,41 +1,32 @@
 <?php
 
-$host="localhost";
-$user="admin_man";
-$pass="66010914015";
-$db="cinemadb";
-
-$conn = new mysqli($host,$user,$pass,$db);
-
-if($conn->connect_error){
-    die("Connection error: ".$conn->connect_error);
-}
+$conn = new mysqli("localhost","admin_man","66010914015","cinemadb");
 
 $sql="SELECT sensor_name,data_value
-      FROM telemetry_data
-      ORDER BY id DESC
-      LIMIT 50";
+FROM telemetry_data
+ORDER BY id DESC
+LIMIT 50";
 
 $result=$conn->query($sql);
 
 $data=[];
 
 while($row=$result->fetch_assoc()){
-    $data[$row['sensor_name']]=$row['data_value'];
+$data[$row['sensor_name']]=$row['data_value'];
 }
 
 $gas=$data['Gas']??0;
 $temp=$data['Temperature']??0;
 $hum=$data['humidity']??0;
 
-$conn->close();
-
 ?>
+
 <!DOCTYPE html>
 <html>
+
 <head>
 
-<title>Smart Cinema Dashboard</title>
+<title>Smart Cinema Control</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -43,48 +34,38 @@ $conn->close();
 
 body{
 background:radial-gradient(circle,#2b0000,#000);
-font-family:Segoe UI;
 color:white;
-text-align:center;
+font-family:Segoe UI;
 }
 
-.header{
-font-size:32px;
+.grid{
+
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:20px;
 padding:20px;
-background:linear-gradient(90deg,#7a0000,#ff0000);
-}
 
-.dashboard{
-display:flex;
-justify-content:center;
-gap:30px;
-margin-top:40px;
 }
 
 .card{
+
 background:#111;
-padding:25px;
+padding:20px;
 border-radius:15px;
-width:220px;
-}
 
-.value{
-font-size:40px;
-}
-
-.control{
-margin-top:50px;
 }
 
 button{
-padding:12px 20px;
-margin:8px;
+
+background:#e00000;
 border:none;
-border-radius:8px;
-background:#ff0000;
 color:white;
+padding:12px;
+margin:6px;
+border-radius:8px;
 font-weight:bold;
 cursor:pointer;
+
 }
 
 button:hover{
@@ -97,43 +78,53 @@ background:#ff4444;
 
 <body>
 
-<div class="header">
-🎬 SMART CINEMA CONTROL
-</div>
+<h1>🎬 SMART CINEMA CONTROL</h1>
 
-<div class="dashboard">
+<div class="grid">
 
 <div class="card">
+
 <h2>Gas</h2>
-<div class="value"><?php echo $gas ?></div>
+
+<h1><?php echo $gas ?></h1>
+
 </div>
 
 <div class="card">
-<h2>Temp</h2>
-<div class="value"><?php echo $temp ?></div>
+
+<h2>Temperature</h2>
+
+<h1><?php echo $temp ?></h1>
+
 </div>
 
 <div class="card">
+
 <h2>Humidity</h2>
-<div class="value"><?php echo $hum ?></div>
-</div>
+
+<h1><?php echo $hum ?></h1>
 
 </div>
 
-<div style="width:70%;margin:auto;margin-top:40px">
+</div>
+
+
+<div class="card">
+
 <canvas id="chart"></canvas>
+
 </div>
 
 
-<div class="control">
+<div class="card">
 
 <h2>💡 Light Control</h2>
 
-<button onclick="send('cinema/stair1','ON')">Stair1 ON</button>
-<button onclick="send('cinema/stair1','OFF')">Stair1 OFF</button>
+<button onclick="send('cinema/stair1','ON')">Stair UC ON</button>
+<button onclick="send('cinema/stair1','OFF')">Stair UC OFF</button>
 
-<button onclick="send('cinema/stair2','ON')">Stair2 ON</button>
-<button onclick="send('cinema/stair2','OFF')">Stair2 OFF</button>
+<button onclick="send('cinema/stair2','ON')">Stair IR ON</button>
+<button onclick="send('cinema/stair2','OFF')">Stair IR OFF</button>
 
 <button onclick="send('cinema/walllight','ON')">Wall ON</button>
 <button onclick="send('cinema/walllight','OFF')">Wall OFF</button>
@@ -141,18 +132,21 @@ background:#ff4444;
 </div>
 
 
-<div class="control">
+<div class="card">
 
-<h2>🎬 Movie Control</h2>
+<h2>🎬 Cinema Control</h2>
 
-<button onclick="send('cinema/command','Input.Left')">⬅</button>
-<button onclick="send('cinema/command','Input.Right')">➡</button>
-<button onclick="send('cinema/command','Input.Up')">⬆</button>
-<button onclick="send('cinema/command','Input.Down')">⬇</button>
+<button onclick="send('cinema/command','Input.Left')">LEFT</button>
+<button onclick="send('cinema/command','Input.Right')">RIGHT</button>
 
-<button onclick="send('cinema/command','Input.Select')">Select</button>
-<button onclick="send('cinema/command','Input.Back')">Back</button>
-<button onclick="send('cinema/command','Input.Home')">Home</button>
+<button onclick="send('cinema/command','Input.Up')">UP</button>
+<button onclick="send('cinema/command','Input.Down')">DOWN</button>
+
+<button onclick="send('cinema/command','playpause')">PLAY / PAUSE</button>
+
+<button onclick="send('cinema/command','Input.Select')">SELECT</button>
+<button onclick="send('cinema/command','Input.Back')">BACK</button>
+<button onclick="send('cinema/command','Input.Home')">HOME</button>
 
 </div>
 
@@ -165,7 +159,7 @@ const hum=<?php echo $hum ?>;
 
 new Chart(document.getElementById("chart"),{
 
-type:'bar',
+type:'line',
 
 data:{
 labels:['Gas','Temp','Humidity'],
@@ -180,11 +174,15 @@ data:[gas,temp,hum]
 function send(topic,value){
 
 fetch("mqtt.php",{
+
 method:"POST",
+
 headers:{
 "Content-Type":"application/x-www-form-urlencoded"
 },
+
 body:"topic="+topic+"&value="+value
+
 });
 
 }
