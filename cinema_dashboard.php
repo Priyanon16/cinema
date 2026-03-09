@@ -48,7 +48,7 @@ $hum=$data['humidity']??0;
 <h3>Gas Sensor</h3>
 
 <canvas id="gasGauge"></canvas>
-<div class="value" id="gasValue">0</div>
+<div class="value" id="gasValue"><?php echo $gas ?></div>
 
 </div>
 
@@ -56,8 +56,7 @@ $hum=$data['humidity']??0;
 
 <h3>Temperature</h3>
 
-<canvas id="tempGauge"></canvas>
-<div class="value" id="tempValue">0</div>
+<div class="value" id="tempValue"><?php echo $temp ?> °C</div>
 
 </div>
 
@@ -66,7 +65,7 @@ $hum=$data['humidity']??0;
 <h3>Humidity</h3>
 
 <canvas id="humGauge"></canvas>
-<div class="value" id="humValue">0</div>
+<div class="value" id="humValue"><?php echo $hum ?> %</div>
 
 </div>
 
@@ -165,7 +164,6 @@ borderRadius:10
 
 options:{
 responsive:true,
-maintainAspectRatio:false,
 plugins:{
 legend:{
 labels:{
@@ -208,6 +206,7 @@ client.subscribe("humidity");
 client.on("message", function(topic, message){
 
 let value = message.toString();
+console.log(topic,value);
 
 if(topic=="cinema/stair1/state"){
 document.getElementById("stair1").innerHTML=value;
@@ -227,7 +226,7 @@ sw.checked = value=="ON";
 
 if(topic=="cinema/gas"){
 
-let gas=parseInt(value);
+let gas = Math.min(parseInt(value),500);
 
 gasGauge.data.datasets[0].data=[gas,500-gas];
 gasGauge.update();
@@ -241,7 +240,7 @@ sensorChart.update();
 
 if(topic=="temperature"){
 
-let temp=parseFloat(value);
+let temp=Math.min(parseFloat(value),100);
 
 tempGauge.data.datasets[0].data=[temp,100-temp];
 tempGauge.update();
@@ -255,7 +254,7 @@ sensorChart.update();
 
 if(topic=="humidity"){
 
-let hum=parseFloat(value);
+let hum=Math.min(parseFloat(value),100);
 
 humGauge.data.datasets[0].data=[hum,100-hum];
 humGauge.update();
