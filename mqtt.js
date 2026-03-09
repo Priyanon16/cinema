@@ -31,9 +31,7 @@ document.getElementById("stair2").innerHTML=value;
 
 
 function send(topic,value){
-    if(value=="Input.PlayPause"){
-value="playpause";
-}
+console.log("SEND MQTT:",topic,value);
 
 client.publish(topic,value);
 
