@@ -1,133 +1,94 @@
 <?php
 
-$host = "localhost";
-$user = "admin_man";
-$pass = "66010914015";
-$db   = "cinemadb";
+$host="localhost";
+$user="admin_man";
+$pass="66010914015";
+$db="cinemadb";
 
 $conn = new mysqli($host,$user,$pass,$db);
 
-if ($conn->connect_error) {
-    die("Connection Error: " . $conn->connect_error);
+if($conn->connect_error){
+    die("Connection error: ".$conn->connect_error);
 }
 
+$sql="SELECT sensor_name,data_value
+      FROM telemetry_data
+      ORDER BY id DESC
+      LIMIT 50";
 
+$result=$conn->query($sql);
 
-/* ===============================
-   GET SENSOR DATA
-================================ */
+$data=[];
 
-$sql = "SELECT sensor_name,data_value
-        FROM telemetry_data
-        ORDER BY id DESC
-        LIMIT 50";
-
-$result = $conn->query($sql);
-
-$data = [];
-
-while($row = $result->fetch_assoc()){
-    $data[$row['sensor_name']] = $row['data_value'];
+while($row=$result->fetch_assoc()){
+    $data[$row['sensor_name']]=$row['data_value'];
 }
 
-$gas  = $data['Gas'] ?? 0;
-$temp = $data['Temperature'] ?? 0;
-$hum  = $data['humidity'] ?? 0;
+$gas=$data['Gas']??0;
+$temp=$data['Temperature']??0;
+$hum=$data['humidity']??0;
 
 $conn->close();
+
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
 
-<meta charset="UTF-8">
 <title>Smart Cinema Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
-/* ===============================
-   GLOBAL STYLE
-================================ */
-
 body{
-    margin:0;
-    font-family:Segoe UI;
-    background: radial-gradient(circle,#2b0000,#000000);
-    color:white;
+background:radial-gradient(circle,#2b0000,#000);
+font-family:Segoe UI;
+color:white;
+text-align:center;
 }
-
-/* ===============================
-   HEADER
-================================ */
 
 .header{
-    text-align:center;
-    padding:20px;
-    font-size:30px;
-    font-weight:bold;
-
-    background:linear-gradient(90deg,#7a0000,#ff0000);
-
-    box-shadow:0 5px 20px rgba(255,0,0,0.5);
+font-size:32px;
+padding:20px;
+background:linear-gradient(90deg,#7a0000,#ff0000);
 }
 
-/* ===============================
-   DASHBOARD CARDS
-================================ */
-
 .dashboard{
-    display:flex;
-    justify-content:center;
-    gap:30px;
-    margin-top:40px;
+display:flex;
+justify-content:center;
+gap:30px;
+margin-top:40px;
 }
 
 .card{
-
-    width:250px;
-    padding:25px;
-
-    background:#111;
-
-    border-radius:15px;
-
-    text-align:center;
-
-    box-shadow:0 0 25px rgba(255,0,0,0.3);
-
-}
-
-.card h2{
-    color:#ff2a2a;
+background:#111;
+padding:25px;
+border-radius:15px;
+width:220px;
 }
 
 .value{
-    font-size:40px;
-    font-weight:bold;
+font-size:40px;
 }
 
-/* ===============================
-   CHART BOX
-================================ */
+.control{
+margin-top:50px;
+}
 
-.chart-box{
+button{
+padding:12px 20px;
+margin:8px;
+border:none;
+border-radius:8px;
+background:#ff0000;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
 
-    width:80%;
-    margin:auto;
-    margin-top:50px;
-
-    background:#111;
-
-    padding:20px;
-
-    border-radius:20px;
-
-    box-shadow:0 0 25px rgba(255,0,0,0.3);
-
+button:hover{
+background:#ff4444;
 }
 
 </style>
@@ -136,136 +97,99 @@ body{
 
 <body>
 
-<!-- ===============================
-     HEADER
-================================ -->
-
 <div class="header">
-🎬 SMART CINEMA DASHBOARD
+🎬 SMART CINEMA CONTROL
 </div>
-
-
-<!-- ===============================
-     SENSOR CARDS
-================================ -->
 
 <div class="dashboard">
 
 <div class="card">
-
-<h2>🔥 Gas</h2>
-
-<div class="value">
-<?php echo $gas ?> ppm
+<h2>Gas</h2>
+<div class="value"><?php echo $gas ?></div>
 </div>
-
-</div>
-
 
 <div class="card">
-
-<h2>🌡 Temperature</h2>
-
-<div class="value">
-<?php echo $temp ?> °C
+<h2>Temp</h2>
+<div class="value"><?php echo $temp ?></div>
 </div>
-
-</div>
-
 
 <div class="card">
-
-<h2>💧 Humidity</h2>
-
-<div class="value">
-<?php echo $hum ?> %
+<h2>Humidity</h2>
+<div class="value"><?php echo $hum ?></div>
 </div>
 
 </div>
 
+<div style="width:70%;margin:auto;margin-top:40px">
+<canvas id="chart"></canvas>
 </div>
 
 
-<!-- ===============================
-     CHART
-================================ -->
+<div class="control">
 
-<div class="chart-box">
+<h2>💡 Light Control</h2>
 
-<canvas id="sensorChart"></canvas>
+<button onclick="send('cinema/stair1','ON')">Stair1 ON</button>
+<button onclick="send('cinema/stair1','OFF')">Stair1 OFF</button>
+
+<button onclick="send('cinema/stair2','ON')">Stair2 ON</button>
+<button onclick="send('cinema/stair2','OFF')">Stair2 OFF</button>
+
+<button onclick="send('cinema/walllight','ON')">Wall ON</button>
+<button onclick="send('cinema/walllight','OFF')">Wall OFF</button>
 
 </div>
 
+
+<div class="control">
+
+<h2>🎬 Movie Control</h2>
+
+<button onclick="send('cinema/command','Input.Left')">⬅</button>
+<button onclick="send('cinema/command','Input.Right')">➡</button>
+<button onclick="send('cinema/command','Input.Up')">⬆</button>
+<button onclick="send('cinema/command','Input.Down')">⬇</button>
+
+<button onclick="send('cinema/command','Input.Select')">Select</button>
+<button onclick="send('cinema/command','Input.Back')">Back</button>
+<button onclick="send('cinema/command','Input.Home')">Home</button>
+
+</div>
 
 
 <script>
 
-/* ===============================
-   CHART DATA
-================================ */
+const gas=<?php echo $gas ?>;
+const temp=<?php echo $temp ?>;
+const hum=<?php echo $hum ?>;
 
-const gas  = <?php echo $gas ?>;
-const temp = <?php echo $temp ?>;
-const hum  = <?php echo $hum ?>;
-
-
-/* ===============================
-   CREATE CHART
-================================ */
-
-const ctx = document.getElementById('sensorChart');
-
-new Chart(ctx,{
+new Chart(document.getElementById("chart"),{
 
 type:'bar',
 
 data:{
-
-labels:['Gas','Temperature','Humidity'],
-
+labels:['Gas','Temp','Humidity'],
 datasets:[{
-
-label:'Sensor Value',
-
-data:[gas,temp,hum],
-
-borderWidth:1
-
+label:'Sensor',
+data:[gas,temp,hum]
 }]
-
-},
-
-options:{
-
-plugins:{
-legend:{
-labels:{color:'white'}
-}
-},
-
-scales:{
-y:{
-ticks:{color:'white'}
-},
-x:{
-ticks:{color:'white'}
-}
-}
-
 }
 
 });
 
+function send(topic,value){
 
-/* ===============================
-   AUTO REFRESH
-================================ */
+fetch("mqtt.php",{
+method:"POST",
+headers:{
+"Content-Type":"application/x-www-form-urlencoded"
+},
+body:"topic="+topic+"&value="+value
+});
 
-setTimeout(function(){
+}
 
-location.reload();
-
-},5000);
+setTimeout(()=>location.reload(),5000);
 
 </script>
 
