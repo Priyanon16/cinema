@@ -48,16 +48,14 @@ $hum=$data['humidity']??0;
 <h3>Gas Sensor</h3>
 
 <canvas id="gasGauge"></canvas>
-<div class="value" id="gasValue"><?php echo $gas ?></div>
 
 </div>
 
 <div class="card">
 
 <h3>Temperature</h3>
-<canvas id="tempGauge"></canvas>
 
-<div class="value" id="tempValue"><?php echo $temp ?> °C</div>
+<canvas id="tempGauge"></canvas>
 
 </div>
 
@@ -66,7 +64,6 @@ $hum=$data['humidity']??0;
 <h3>Humidity</h3>
 
 <canvas id="humGauge"></canvas>
-<div class="value" id="humValue"><?php echo $hum ?> %</div>
 
 </div>
 
@@ -119,7 +116,7 @@ Stair Light IR :
 
 <button onclick="send('cinema/command','Input.Down')">DOWN</button>
 
-<button onclick="playpause()">PLAY / PAUSE</button>
+<button onclick="send('cinema/command','playpause')">PLAY / PAUSE</button>
 
 <button onclick="send('cinema/command','Input.Select')">SELECT</button>
 
@@ -139,52 +136,16 @@ const gas=<?php echo $gas ?>;
 const temp=<?php echo $temp ?>;
 const hum=<?php echo $hum ?>;
 
-const sensorChart = new Chart(document.getElementById("chart"),{
+new Chart(document.getElementById("chart"),{
 
 type:'bar',
 
 data:{
 labels:['Gas','Temp','Humidity'],
-
 datasets:[{
-label:'Sensor Value',
-
-data:[gas,temp,hum],
-
-backgroundColor:[
-"#00ff9c",
-"#ff3b3b",
-"#ffd500"
-],
-
-borderRadius:10
-
+label:'Sensor',
+data:[gas,temp,hum]
 }]
-
-},
-
-options:{
-responsive:true,
-plugins:{
-legend:{
-labels:{
-color:"#ffffff",
-font:{size:16}
-}
-}
-},
-
-scales:{
-x:{
-ticks:{color:"#ffffff"},
-grid:{color:"rgba(255,255,255,0.1)"}
-},
-y:{
-beginAtZero:true,
-ticks:{color:"#ffffff"},
-grid:{color:"rgba(255,255,255,0.1)"}
-}
-}
 }
 
 });
@@ -198,16 +159,12 @@ console.log("MQTT Connected");
 client.subscribe("cinema/stair1/state");
 client.subscribe("cinema/stair2/state");
 client.subscribe("cinema/walllight/state");
-client.subscribe("cinema/gas");
-client.subscribe("temperature");
-client.subscribe("humidity");
 
 });
 
 client.on("message", function(topic, message){
 
 let value = message.toString();
-console.log(topic,value);
 
 if(topic=="cinema/stair1/state"){
 document.getElementById("stair1").innerHTML=value;
@@ -225,47 +182,6 @@ sw.checked = value=="ON";
 
 }
 
-if(topic=="cinema/gas"){
-
-let gas = Math.min(parseInt(value),500);
-
-gasGauge.data.datasets[0].data=[gas,500-gas];
-gasGauge.update();
-
-document.getElementById("gasValue").innerHTML=gas;
-
-sensorChart.data.datasets[0].data[0]=gas;
-sensorChart.update();
-
-}
-
-if(topic=="temperature"){
-
-let temp=Math.min(parseFloat(value),100);
-
-tempGauge.data.datasets[0].data=[temp,100-temp];
-tempGauge.update();
-
-document.getElementById("tempValue").innerHTML=temp+" °C";
-
-sensorChart.data.datasets[0].data[1]=temp;
-sensorChart.update();
-
-}
-
-if(topic=="humidity"){
-
-let hum=Math.min(parseFloat(value),100);
-
-humGauge.data.datasets[0].data=[hum,100-hum];
-humGauge.update();
-
-document.getElementById("humValue").innerHTML=hum+" %";
-
-sensorChart.data.datasets[0].data[2]=hum;
-sensorChart.update();
-
-}
 });
 
 document.getElementById("wallSwitch").addEventListener("change",function(){
@@ -285,45 +201,48 @@ console.log("Send:",topic,value);
 
 function createGauge(id,value,max,color){
 
-return new Chart(document.getElementById(id),{
+const ctx = document.getElementById(id);
+
+new Chart(ctx,{
 
 type:'doughnut',
 
 data:{
 datasets:[{
-data:[value,max-value],
+data:[value, max-value],
 backgroundColor:[color,"#333"],
 borderWidth:0
 }]
 },
 
 options:{
+
+
+responsive:true,
+maintainAspectRatio:false,
+
 rotation:270,
 circumference:180,
+
 cutout:'70%',
-plugins:{legend:{display:false}}
+
+plugins:{
+legend:{display:false},
+tooltip:{enabled:false}
+}
+
 }
 
 });
 
 }
-const gasGauge = createGauge("gasGauge",gas,500,"#7CFC00");
-const tempGauge = createGauge("tempGauge",temp,100,"#ff4444");
-const humGauge = createGauge("humGauge",hum,100,"#e6ff00");
 
+createGauge("gasGauge", gas, 500, "#7CFC00")
 
-function playpause(){
+createGauge("tempGauge", temp, 100, "#ff4444")
 
-let msg = {
-method:"Input.ExecuteAction",
-params:{
-action:"playpause"
-}
-};
+createGauge("humGauge", hum, 100, "#e6ff00")
 
-client.publish("cinema/command",JSON.stringify(msg));
-
-}
 </script>
 
 </body>
