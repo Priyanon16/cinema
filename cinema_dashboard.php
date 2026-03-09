@@ -128,7 +128,7 @@ Stair Light IR :
 
 
 
-<script src="mqtt.js"></script>
+
 
 <script>
 
@@ -194,26 +194,27 @@ client.publish("cinema/walllight",value);
 
 function createGauge(id,value,max,color){
 
-new Chart(document.getElementById(id),{
+const ctx = document.getElementById(id);
+
+new Chart(ctx,{
 
 type:'doughnut',
 
 data:{
 datasets:[{
-
-data:[value,max-value],
-
+data:[value, max-value],
 backgroundColor:[color,"#333"],
-
 borderWidth:0
-
 }]
 },
 
 options:{
 
-rotation:-90,
 
+responsive:true,
+maintainAspectRatio:false,
+
+rotation:270,
 circumference:180,
 
 cutout:'70%',
@@ -225,7 +226,7 @@ tooltip:{enabled:false}
 
 }
 
-})
+});
 
 }
 
