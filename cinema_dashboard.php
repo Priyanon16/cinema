@@ -45,25 +45,25 @@ $hum=$data['humidity']??0;
 
 <div class="card">
 
-<h2>Gas</h2>
+<h3>Gas Sensor</h3>
 
-<div class="value"><?php echo $gas ?></div>
-
-</div>
-
-<div class="card">
-
-<h2>Temperature</h2>
-
-<div class="value"><?php echo $temp ?></div>
+<canvas id="gasGauge"></canvas>
 
 </div>
 
 <div class="card">
 
-<h2>Humidity</h2>
+<h3>Temperature</h3>
 
-<div class="value"><?php echo $hum ?></div>
+<canvas id="tempGauge"></canvas>
+
+</div>
+
+<div class="card">
+
+<h3>Humidity</h3>
+
+<canvas id="humGauge"></canvas>
 
 </div>
 
@@ -191,6 +191,49 @@ let value=this.checked?"ON":"OFF";
 client.publish("cinema/walllight",value);
 
 });
+
+function createGauge(id,value,max,color){
+
+new Chart(document.getElementById(id),{
+
+type:'doughnut',
+
+data:{
+datasets:[{
+
+data:[value,max-value],
+
+backgroundColor:[color,"#333"],
+
+borderWidth:0
+
+}]
+},
+
+options:{
+
+rotation:-90,
+
+circumference:180,
+
+cutout:'70%',
+
+plugins:{
+legend:{display:false},
+tooltip:{enabled:false}
+}
+
+}
+
+})
+
+}
+
+createGauge("gasGauge", gas, 500, "#7CFC00")
+
+createGauge("tempGauge", temp, 100, "#ff4444")
+
+createGauge("humGauge", hum, 100, "#e6ff00")
 
 </script>
 
