@@ -94,11 +94,12 @@ Stair Light IR :
 
 <div class="card">
 
-<h2>Light Control</h2>
+<h2>Wall Light</h2>
 
-<button onclick="send('cinema/walllight','ON')">Wall ON</button>
-
-<button onclick="send('cinema/walllight','OFF')">Wall OFF</button>
+<label class="switch">
+  <input type="checkbox" id="wallSwitch">
+  <span class="slider"></span>
+</label>
 
 </div>
 
@@ -146,6 +147,48 @@ label:'Sensor',
 data:[gas,temp,hum]
 }]
 }
+
+});
+
+const client = mqtt.connect("ws://103.114.201.199:9001");
+
+client.on("connect", function(){
+
+console.log("MQTT Connected");
+
+client.subscribe("cinema/stair1/state");
+client.subscribe("cinema/stair2/state");
+client.subscribe("cinema/walllight/state");
+
+});
+
+client.on("message", function(topic, message){
+
+let value = message.toString();
+
+if(topic=="cinema/stair1/state"){
+document.getElementById("stair1").innerHTML=value;
+}
+
+if(topic=="cinema/stair2/state"){
+document.getElementById("stair2").innerHTML=value;
+}
+
+if(topic=="cinema/walllight/state"){
+
+let sw=document.getElementById("wallSwitch");
+
+sw.checked = value=="ON";
+
+}
+
+});
+
+document.getElementById("wallSwitch").addEventListener("change",function(){
+
+let value=this.checked?"ON":"OFF";
+
+client.publish("cinema/walllight",value);
 
 });
 
