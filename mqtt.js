@@ -31,6 +31,9 @@ document.getElementById("stair2").innerHTML=value;
 
 
 function send(topic,value){
+    if(value=="Input.PlayPause"){
+value="playpause";
+}
 
 client.publish(topic,value);
 
