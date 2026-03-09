@@ -119,3 +119,29 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(24px);
 }
+
+.card{
+
+background:#0c0c0c;
+
+border-radius:18px;
+
+padding:25px;
+
+box-shadow:0 0 25px rgba(255,0,0,0.4);
+
+margin:20px;
+
+}
+
+h1{
+
+text-align:center;
+
+color:#ffffff;
+
+letter-spacing:3px;
+
+margin-top:20px;
+
+}
