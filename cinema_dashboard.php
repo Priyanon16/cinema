@@ -31,7 +31,6 @@ $hum=$data['humidity']??0;
 <link rel="stylesheet" href="style.css">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
 </head>
@@ -40,42 +39,31 @@ $hum=$data['humidity']??0;
 
 <h1>🎬 SMART CINEMA CONTROL</h1>
 
-
 <div class="grid">
 
 <div class="card">
-
 <h3>Gas Sensor</h3>
-
 <canvas id="gasGauge"></canvas>
-
+<div class="value" id="gasValue"><?php echo $gas ?></div>
 </div>
 
 <div class="card">
-
 <h3>Temperature</h3>
-
 <canvas id="tempGauge"></canvas>
-
+<div class="value" id="tempValue"><?php echo $temp ?> °C</div>
 </div>
 
 <div class="card">
-
 <h3>Humidity</h3>
-
 <canvas id="humGauge"></canvas>
-
+<div class="value" id="humValue"><?php echo $hum ?> %</div>
 </div>
 
 </div>
-
 
 <div class="card">
-
 <canvas id="chart"></canvas>
-
 </div>
-
 
 <div class="card">
 
@@ -91,44 +79,31 @@ Stair Light IR :
 
 </div>
 
-
 <div class="card">
 
 <h2>Wall Light</h2>
 
 <label class="switch">
-  <input type="checkbox" id="wallSwitch">
-  <span class="slider"></span>
+<input type="checkbox" id="wallSwitch">
+<span class="slider"></span>
 </label>
 
 </div>
-
 
 <div class="card">
 
 <h2>Movie Control</h2>
 
 <button onclick="send('cinema/command','Input.Left')">LEFT</button>
-
 <button onclick="send('cinema/command','Input.Right')">RIGHT</button>
-
 <button onclick="send('cinema/command','Input.Up')">UP</button>
-
 <button onclick="send('cinema/command','Input.Down')">DOWN</button>
-
-<button onclick="send('cinema/command','playpause')">PLAY / PAUSE</button>
-
+<button onclick="playpause()">PLAY / PAUSE</button>
 <button onclick="send('cinema/command','Input.Select')">SELECT</button>
-
 <button onclick="send('cinema/command','Input.Back')">BACK</button>
-
 <button onclick="send('cinema/command','Input.Home')">HOME</button>
 
 </div>
-
-
-
-
 
 <script>
 
@@ -136,19 +111,54 @@ const gas=<?php echo $gas ?>;
 const temp=<?php echo $temp ?>;
 const hum=<?php echo $hum ?>;
 
-new Chart(document.getElementById("chart"),{
+/* ===== Chart ===== */
+
+const sensorChart = new Chart(document.getElementById("chart"),{
 
 type:'bar',
 
 data:{
 labels:['Gas','Temp','Humidity'],
+
 datasets:[{
-label:'Sensor',
-data:[gas,temp,hum]
+label:'Sensor Value',
+
+data:[gas,temp,hum],
+
+backgroundColor:[
+"#00ff9c",
+"#ff3b3b",
+"#ffd500"
+],
+
+borderRadius:10
+
 }]
+
+},
+
+options:{
+responsive:true,
+plugins:{
+legend:{
+labels:{color:"#ffffff"}
+}
+},
+scales:{
+x:{
+ticks:{color:"#ffffff"}
+},
+y:{
+beginAtZero:true,
+ticks:{color:"#ffffff"}
+}
+}
 }
 
 });
+
+
+/* ===== MQTT ===== */
 
 const client = mqtt.connect("ws://103.114.201.199:9001");
 
@@ -160,11 +170,21 @@ client.subscribe("cinema/stair1/state");
 client.subscribe("cinema/stair2/state");
 client.subscribe("cinema/walllight/state");
 
+client.subscribe("cinema/gas");
+client.subscribe("temperature");
+client.subscribe("humidity");
+
 });
+
 
 client.on("message", function(topic, message){
 
 let value = message.toString();
+
+console.log(topic,value);
+
+
+/* Stair light */
 
 if(topic=="cinema/stair1/state"){
 document.getElementById("stair1").innerHTML=value;
@@ -174,74 +194,140 @@ if(topic=="cinema/stair2/state"){
 document.getElementById("stair2").innerHTML=value;
 }
 
+
+/* Wall light state */
+
 if(topic=="cinema/walllight/state"){
 
 let sw=document.getElementById("wallSwitch");
-
 sw.checked = value=="ON";
 
 }
 
+
+/* Gas */
+
+if(topic=="cinema/gas"){
+
+let g = Math.min(parseInt(value),500);
+
+gasGauge.data.datasets[0].data=[g,500-g];
+gasGauge.update();
+
+document.getElementById("gasValue").innerHTML=g;
+
+sensorChart.data.datasets[0].data[0]=g;
+sensorChart.update();
+
+}
+
+
+/* Temperature */
+
+if(topic=="temperature"){
+
+let t = Math.min(parseFloat(value),100);
+
+tempGauge.data.datasets[0].data=[t,100-t];
+tempGauge.update();
+
+document.getElementById("tempValue").innerHTML=t+" °C";
+
+sensorChart.data.datasets[0].data[1]=t;
+sensorChart.update();
+
+}
+
+
+/* Humidity */
+
+if(topic=="humidity"){
+
+let h = Math.min(parseFloat(value),100);
+
+humGauge.data.datasets[0].data=[h,100-h];
+humGauge.update();
+
+document.getElementById("humValue").innerHTML=h+" %";
+
+sensorChart.data.datasets[0].data[2]=h;
+sensorChart.update();
+
+}
+
 });
+
+
+/* ===== Wall Light Control ===== */
 
 document.getElementById("wallSwitch").addEventListener("change",function(){
 
 let value=this.checked?"ON":"OFF";
 
+/* ส่งคำสั่งไป Node-RED */
+
 client.publish("cinema/walllight",value);
 
 });
+
+
+/* ===== Send Command ===== */
+
 function send(topic,value){
 
 client.publish(topic,value);
 
-console.log("Send:",topic,value);
-
 }
+
+
+/* ===== Gauge ===== */
 
 function createGauge(id,value,max,color){
 
-const ctx = document.getElementById(id);
-
-new Chart(ctx,{
+return new Chart(document.getElementById(id),{
 
 type:'doughnut',
 
 data:{
 datasets:[{
-data:[value, max-value],
+data:[value,max-value],
 backgroundColor:[color,"#333"],
 borderWidth:0
 }]
 },
 
 options:{
-
-
-responsive:true,
-maintainAspectRatio:false,
-
 rotation:270,
 circumference:180,
-
 cutout:'70%',
-
-plugins:{
-legend:{display:false},
-tooltip:{enabled:false}
-}
-
+plugins:{legend:{display:false}}
 }
 
 });
 
 }
 
-createGauge("gasGauge", gas, 500, "#7CFC00")
+const gasGauge = createGauge("gasGauge",gas,500,"#7CFC00");
+const tempGauge = createGauge("tempGauge",temp,100,"#ff4444");
+const humGauge = createGauge("humGauge",hum,100,"#e6ff00");
 
-createGauge("tempGauge", temp, 100, "#ff4444")
 
-createGauge("humGauge", hum, 100, "#e6ff00")
+/* ===== Play Pause ===== */
+
+function playpause(){
+
+let msg = {
+
+method:"Input.ExecuteAction",
+params:{
+action:"playpause"
+}
+
+};
+
+client.publish("cinema/command",JSON.stringify(msg));
+
+}
 
 </script>
 
