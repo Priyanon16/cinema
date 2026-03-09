@@ -116,7 +116,7 @@ Stair Light IR :
 
 <button onclick="send('cinema/command','Input.Down')">DOWN</button>
 
-<button onclick="send('cinema/command','Input.PlayPause')">PLAY / PAUSE</button>
+<button onclick="send('cinema/command','playpause')">PLAY / PAUSE</button>
 
 <button onclick="send('cinema/command','Input.Select')">SELECT</button>
 
