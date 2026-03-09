@@ -3,9 +3,9 @@
    DATABASE CONNECTION
 ================================ */
 
-$host = "103.114.201.199";
+$host = "localhost";
 $user = "admin_man";
-$pass = "";
+$pass = "66010914015";
 $db   = "cinemadb";
 
 $conn = new mysqli($host,$user,$pass,$db);
