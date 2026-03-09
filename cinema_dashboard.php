@@ -48,6 +48,7 @@ $hum=$data['humidity']??0;
 <h3>Gas Sensor</h3>
 
 <canvas id="gasGauge"></canvas>
+<div class="value" id="gasValue">0</div>
 
 </div>
 
@@ -56,6 +57,7 @@ $hum=$data['humidity']??0;
 <h3>Temperature</h3>
 
 <canvas id="tempGauge"></canvas>
+<div class="value" id="tempValue">0</div>
 
 </div>
 
@@ -64,6 +66,7 @@ $hum=$data['humidity']??0;
 <h3>Humidity</h3>
 
 <canvas id="humGauge"></canvas>
+<div class="value" id="humValue">0</div>
 
 </div>
 
@@ -136,16 +139,14 @@ const gas=<?php echo $gas ?>;
 const temp=<?php echo $temp ?>;
 const hum=<?php echo $hum ?>;
 
-new Chart(document.getElementById("chart"),{
+const sensorChart = new Chart(document.getElementById("chart"),{
 
 type:'bar',
 
 data:{
-
 labels:['Gas','Temp','Humidity'],
 
 datasets:[{
-
 label:'Sensor Value',
 
 data:[gas,temp,hum],
@@ -156,18 +157,14 @@ backgroundColor:[
 "#ffd500"
 ],
 
-borderRadius:10,
-
-borderSkipped:false
+borderRadius:10
 
 }]
 
 },
 
 options:{
-
 responsive:true,
-
 plugins:{
 legend:{
 labels:{
@@ -178,30 +175,16 @@ font:{size:16}
 },
 
 scales:{
-
 x:{
-ticks:{
-color:"#ffffff",
-font:{size:14}
+ticks:{color:"#ffffff"},
+grid:{color:"rgba(255,255,255,0.1)"}
 },
-grid:{
-color:"rgba(255,255,255,0.1)"
-}
-},
-
 y:{
 beginAtZero:true,
-ticks:{
-color:"#ffffff",
-font:{size:14}
-},
-grid:{
-color:"rgba(255,255,255,0.1)"
+ticks:{color:"#ffffff"},
+grid:{color:"rgba(255,255,255,0.1)"}
 }
 }
-
-}
-
 }
 
 });
@@ -215,6 +198,9 @@ console.log("MQTT Connected");
 client.subscribe("cinema/stair1/state");
 client.subscribe("cinema/stair2/state");
 client.subscribe("cinema/walllight/state");
+client.subscribe("cinema/gas");
+client.subscribe("temperature");
+client.subscribe("humidity");
 
 });
 
@@ -238,6 +224,47 @@ sw.checked = value=="ON";
 
 }
 
+if(topic=="cinema/gas"){
+
+let gas=parseInt(value);
+
+gasGauge.data.datasets[0].data=[gas,500-gas];
+gasGauge.update();
+
+document.getElementById("gasValue").innerHTML=gas;
+
+sensorChart.data.datasets[0].data[0]=gas;
+sensorChart.update();
+
+}
+
+if(topic=="temperature"){
+
+let temp=parseFloat(value);
+
+tempGauge.data.datasets[0].data=[temp,100-temp];
+tempGauge.update();
+
+document.getElementById("tempValue").innerHTML=temp+" °C";
+
+sensorChart.data.datasets[0].data[1]=temp;
+sensorChart.update();
+
+}
+
+if(topic=="humidity"){
+
+let hum=parseFloat(value);
+
+humGauge.data.datasets[0].data=[hum,100-hum];
+humGauge.update();
+
+document.getElementById("humValue").innerHTML=hum+" %";
+
+sensorChart.data.datasets[0].data[2]=hum;
+sensorChart.update();
+
+}
 });
 
 document.getElementById("wallSwitch").addEventListener("change",function(){
@@ -257,47 +284,31 @@ console.log("Send:",topic,value);
 
 function createGauge(id,value,max,color){
 
-const ctx = document.getElementById(id);
-
-new Chart(ctx,{
+return new Chart(document.getElementById(id),{
 
 type:'doughnut',
 
 data:{
 datasets:[{
-data:[value, max-value],
+data:[value,max-value],
 backgroundColor:[color,"#333"],
 borderWidth:0
 }]
 },
 
 options:{
-
-
-responsive:true,
-maintainAspectRatio:false,
-
 rotation:270,
 circumference:180,
-
 cutout:'70%',
-
-plugins:{
-legend:{display:false},
-tooltip:{enabled:false}
-}
-
+plugins:{legend:{display:false}}
 }
 
 });
 
 }
-
-createGauge("gasGauge", gas, 500, "#7CFC00")
-
-createGauge("tempGauge", temp, 100, "#ff4444")
-
-createGauge("humGauge", hum, 100, "#e6ff00")
+const gasGauge = createGauge("gasGauge",gas,500,"#7CFC00");
+const tempGauge = createGauge("tempGauge",temp,100,"#ff4444");
+const humGauge = createGauge("humGauge",hum,100,"#e6ff00");
 
 
 function playpause(){
