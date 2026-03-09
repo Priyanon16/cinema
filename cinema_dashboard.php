@@ -55,6 +55,7 @@ $hum=$data['humidity']??0;
 <div class="card">
 
 <h3>Temperature</h3>
+<canvas id="tempGauge"></canvas>
 
 <div class="value" id="tempValue"><?php echo $temp ?> °C</div>
 
@@ -271,7 +272,7 @@ document.getElementById("wallSwitch").addEventListener("change",function(){
 
 let value=this.checked?"ON":"OFF";
 
-client.publish("cinema/walllight",value);
+client.publish("cinema/walllight/state",value);
 
 });
 function send(topic,value){
