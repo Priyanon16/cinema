@@ -191,6 +191,13 @@ let value=this.checked?"ON":"OFF";
 client.publish("cinema/walllight",value);
 
 });
+function send(topic,value){
+
+client.publish(topic,value);
+
+console.log("Send:",topic,value);
+
+}
 
 function createGauge(id,value,max,color){
 
