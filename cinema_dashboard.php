@@ -165,6 +165,7 @@ borderRadius:10
 
 options:{
 responsive:true,
+maintainAspectRatio:false,
 plugins:{
 legend:{
 labels:{
